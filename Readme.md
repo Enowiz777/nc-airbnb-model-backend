@@ -19,4 +19,24 @@ Install poetry - Poetry is going to allow us to create a virtual environment.
 -- Just enter on everything. 
 -- say yes. 
 Output: 
-- pyproject.toml gets created. 
+- pyproject.toml gets created: contains description of the virtual environment and the version of python and settings. 
+
+*How do you get inside the bubble?*
+1. Enter into a poetry shell. 
+```
+poetry shell
+```
+2. Test your VE by running Django Admin command
+```
+django-admin
+```
+3. Run 'Exit' to exit the VE.
+
+*How do you start Django project within the folder that you already created?*
+```
+django-admin startproject config .
+```
+
+*Pacakge to install .gitignore*
+Download Gitignore and run the command pallete to create gitignore. 
+

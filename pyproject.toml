@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "nc-airbnb-model-backend"
+version = "0.1.0"
+description = ""
+authors = ["Enoch Park <enoch.park@enowiz.com>"]
+readme = "README.md"
+packages = [{include = "nc_airbnb_model_backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Django = "^4.1.1"
+beautifulsoup4 = "^4.11.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
