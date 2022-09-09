@@ -9,4 +9,18 @@ from .models import House
 # HouseAdmin inherits everything from admin panel for your model.
 # ModelAdmin is in admin panel.
 class HouseAdmin(admin.ModelAdmin):
-    pass
+    # 
+    liste_display = [
+        "name", 
+        "price_per_night",
+        "address",
+        "pets_allowed"
+    ]
+    # Create a filter
+    list_filter = [
+    "price_per_night",
+    "pets_allowed"
+    ]
+    # Search for address
+    search_fields = ["address_startswith"] # search an house that starts with.
+    

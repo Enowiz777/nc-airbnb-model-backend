@@ -7,6 +7,7 @@ class House(models.Model):
     # There are many data fields that you can choose from
     name= models.CharField(max_length=140)
     # Price can't be negative; Django will give warning if price becomes negative.
-    price = models.PositiveIntegerField()
+    price_per_night = models.PositiveIntegerField()
     description = models.TextField()
     address = models.CharField(max_length=140)
+    pets_allowed = models.BooleanField(default=True)
