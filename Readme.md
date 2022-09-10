@@ -444,4 +444,28 @@ class CustomUserAdmin(UserAdmin):
 ```
 
 - You can add classes ("collapse") to make it collapsable. 
+
+
+# Foreign Keys
+
+*How to connect models to each other?*
+
+- Since many apps and models have connection with each other, we have to learn how to connect models to each other. 
+
+- Foreign keys are just like IDs. 
+- In the Django documentation, it is called pk. 
+- Houses and Users have IDs. 
+- Type of the column would be the *foreign key*
+- Django will know that numbers that you provided are the ID in the User DB. 
+- Django will search for the user and utilize that data.
+```python
+    owner = models.ForeignKey(
+        "users.User", 
+        on_delete=models.CASCADE
+        )
+```
+
+## Super Recap
+- IF the user with the ID gets deleted the house gets deleted as well if their information is related with CASCADE. 
+
 - 
