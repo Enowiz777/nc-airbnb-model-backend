@@ -21,16 +21,24 @@ Install poetry - Poetry is going to allow us to create a virtual environment.
 Output: 
 - pyproject.toml gets created: contains description of the virtual environment and the version of python and settings. 
 
+*How do you add Django App?*
+
+- Please make sure that you are inside of the project folder, and run below command.
+```
+poetry add django
+```
+**Output: poetry.lock got created.**
+
 *How do you get inside the bubble?*
-1. Enter into a poetry shell. 
+- Enter into a poetry shell. 
 ```
 poetry shell
 ```
-2. Test your VE by running Django Admin command
+- Test your VE by running Django Admin command
 ```
 django-admin
 ```
-3. Run 'Exit' to exit the VE.
+-  Run 'Exit' to exit the VE.
 
 *How do you start Django project within the folder that you already created?*
 ```
@@ -468,4 +476,257 @@ class CustomUserAdmin(UserAdmin):
 ## Super Recap
 - IF the user with the ID gets deleted the house gets deleted as well if their information is related with CASCADE. 
 
+# 6 Models and Admin
+
+- Create a profile photo. 
+- Import ImageField - need to install Pillow. 
+- In stall pillow from your poetry. 
+```
+poetry add Pillow 
+```
+- Need to migrate later...
+- Create GenerChoices 
+
+user/models.py
+```py
+
+
+class User(AbstractUser):
+    class GenderChoices(models.TextChoices):
+        MALE = ("male", "Male")
+        FEMALE = ("female", "Female")
+
+    class LanguageChoices(models.TextChoices):
+        KR = ("kr", "Korean")
+        EN = ("en", "English")
+
+    class CurrencyChoices(models.TextChoices):
+        WON = "won", "Korean Won"
+        USD = "usd", "Dollar"
+
+    first_name = models.CharField(max_length=150, editable=False)
+    last_name = models.CharField(max_length=150, editable=False)
+    profile_photo = models.ImageField()
+    name = models.CharField(max_length=150, default="")
+    is_host = models.BooleanField(default=False)
+    gender = models.CharField(
+        max_length=10,
+        choices=GenderChoices.choices,
+    )
+    language = models.CharField(
+        max_length=2,
+        choices=LanguageChoices.choices,
+    )
+    currency = models.CharField(
+        max_length=5,
+        choices=CurrencyChoices.choices,
+    )
+
+```
+
+- Once you added new models, you migrate.
+- After you add model, you add the values inside the admin.py.
+- You will see that there are additioal models populated on the user in the admin panel. 
+- blank=true allows the field not required to be empty. 
+- All these information gets saved on the postgresql. 
+
+# Room Model 
+
+- Create room application
+- Add it to the CUSTOM_APPS in the setting. 
+
+- Room inherit from the models.Model
+- Add Country and other variables. 
+
+
+models.py
+```py
+class Room(models.Model):
+    country = models.CharField(max_length=50, default="한국")
+    city = models.CharField(max_length)
+    price = models.PositiveIntegerField()
+    rooms = models.PositiveIntegerField()
+    toilets = models.PositiveIntegerField()
+    description = models.TextField()
+    address = models.CharField(max_length=250)
+    pet_friendly = models
+```
+
+
+```
+class RoomKindChoices(models.TextChoices):
+    
+```
+
+- Create a model called "Amenity"
+- The room page shows what they offer.
+- This will unlock a new concept called many-to-many.
+```py
+class Amenity(models.Model):
+    """ Amenity Definition """
+    name = models.CharField(max_length=150)
+    description = models.CharField(max_length=150, default="")
+```
+- Again, ondelete will delete when the user is deleted. 
 - 
+
+# Many to Many relationship
+
+*What is the meaning of many to one and one to many*
+
+Many to One
+ex: Many rooms and belong to the same user. 
+
+One to Many
+ex: one user can have many rooms. 
+```py
+owner = models.ForeignKey(
+    "users.User",
+    on_delete=models.CASCADE,
+
+)
+```
+
+Many to Many
+- Many to Many relationship means that 
+[Amenity1, Amenity2, and Amenity3] can be used by all Rooms [Room1, Room2, Room3]
+
+- Admin Panel will help us visualize these concepts.
+- We have to go to rooms and add below
+
+```py
+amenities = models.ManyToManyField("rooms.Amenity")
+```
+
+auto_now_add = set the field to right now when the object is first created. 
+
+- Create one more application that you are going to be shared by one application. 
+- Common model could be the models that other users use as a blueprint
+```py
+class CommonModel(models.Model):
+    """Common Model Definition"""
+    created_at = models.DateTimeField(auto_new_add=True)
+    updated_at = models.DateTimeField(auto_new=True)
+
+    class Meta:
+        abstract = True
+
+```
+- RECAP: a new app called common will be shared across the multiple apps. 
+
+Many to Many: Many rooms can have many amenities.
+Foriegn key: one user upload one room.
+
+Django should be ignore Common model because we don't want to create a table for created_at everytime they look at the object. 
+
+blank_true vs null_true
+
+# Rooms Admin
+
+*How do you show a class as a string?*
+- __str__ method will acomplish this. 
+
+```py
+def __str__(self) ->str:
+    return self.name
+```
+
+- If you want to create a filter in the admin, you can create a filter by using a list_filter var.
+-"auto_now=True" automatically create var.
+
+# 6.5 Experience
+
+- Experiences model 
+- Create app
+- Update setting.py
+- Foreign: when the user is deleted, you delete all other var associated. (on_delete)
+- Create all the fields with corresponding fieldtypes. 
+
+# 6.7
+
+- Users can create a review
+- App > setting
+
+```py
+class Review(CommonModel):
+    user = models.ForeignKey(
+        "user.User",
+        on_delete=models.CASCADE,
+    )
+    room = models.ForeignKey(
+        "rooms.Rooms"
+        null=True,
+        blank=True
+        on_delete=models.SET_NULL,
+        )
+
+```
+
+- Django calls str method of the review on the admin panel 
+
+# Wishlists
+
+- Wishlists is when the user comes and they like a room or an experience. 
+- You can create a wishlist or add a room to a wishlist. 
+- Add a wishlist app
+- put it in custom_app of setting.py
+- 
+*Create ManytoMany relationship:*
+```py
+rooms = models.ManyToManyField(
+    "rooms.Room",
+)
+
+```
+- After you migrate, you will see them in the admin panel. YOu can create an object yourself.
+- You can add def __str__ method if you want your object to look nicer. 
+
+
+# Bookings
+
+- Users can book or they can book from rooms. They can check in with the date, you can reserve. 
+- This model can be created within an app called Bookings or reservation. 
+- ONe users can have many bookings but booking can only have one user.
+- One-To-Many: Foriegn key. 
+
+Room: Can one booking has many rooms? no. Booking can have one room. One room can have many bookings. 
+- One-To-Many: This is a foreign key.
+- even if experience gets deleted, users should still know what they booked. 
+on_delete= models.SET_NULL,
+
+- Booking Model:
+    - User - ForeignKey() - one to many.
+        - on_delete = models.CASCADE.
+        - If user deleted, booking gets deleted.
+    - Room - ForeignKey() - one to many
+        - on_delete=models.SET_NULL.
+        - null=True
+        - blan=True: for django admin form. 
+
+    - Experience = models.ForiegnKey()
+    - Check_in = models.DateField()
+    - Check_out = models.DateField()
+
+- makemigrations -> migrate
+
+- Register to admin
+@admin.register(Booking)
+class Booking(admin.ModelAdmin):
+    list_display = {
+        "kind",
+        "user",
+        "room",
+        "experience",
+        "check_in",
+        "check_out"
+
+    }
+
+# Medias 
+
+- One room can have many photos and videos. 
+Steps:
+1. Startapp medias
+2. Add medias app in the setting
+3. Create two models (one for photos, one for videos)
+4. 
