@@ -948,3 +948,173 @@ Recap:
 
 1. Foreign key
 2. 
+
+# Power Admin
+
+- We are going to learn how to create a search box, action and filte.r 
+
+- We can get review average when I am looking at the room. 
+- We know how to run a function in admin panel . 
+- In admin.py, you can view total_amenities and you can count
+```py
+def total_amenities(room):
+    return room.amenities.count()
+```
+
+- If you are going to use in the admin.py
+- If you want to use anywhere, you put it in the model.py
+
+```py
+def rating(room):
+    # There are review model that are pointing to rooms. We can access using a reverse accessor. 
+    return room.reviews.count()
+    if count == 0:
+        return "No Reviews"
+    else:
+        total_rating = 0
+        for review in room.reviews.all():
+            total_rating += review.rating
+            # two decimal spaces
+        return (total_rating / count, 2)
+ 
+```
+
+- You can optimize the lazy loading by getting specific values you want
+
+```py
+for review in room.reviews.all().values("rating"):
+    # because you changed to bring only values, it will return a dictionary.
+    total_rating += review["rating"]
+return round(total_rating /count, 2)
+```
+
+## Search Fields
+- Search room based on the username or the owner of the room.
+
+*How do you create a search bar in the admin console?*
+In admin.py,
+
+You add below:
+```py
+search_fields = (
+    "name",
+    "price"
+)
+
+```
+- This will create a search bar that search by fields listed inside the var.
+
+- ^name: start of the name.
+- owner__username: you can search by owner username
+- =owner__username: search exact word.
+
+*How do you add an action?*
+
+- When you delete, ondelete. It tells you what will be deleted. All you have to do is to create admin.action. 
+- In admin.py
+
+```py
+from .models import Room, Amenity
+
+@admin.action(description="Set all prices to zero")
+def reset_prices(model_admin, requset, querySet):
+    # request: request object is about who is calling this action. We can build an admin panel that only username with admin can check. 
+    # queryset: the least of all the object that you selected. You will get all the objectsets that you selected.
+    for room in rooms.all():
+        print(room)
+        room.price=0
+        room.save()
+  
+```
+
+*Actions are useful!*
+- You can create excel export
+- Owner - modify data 
+
+## Custom Filter
+
+- list_filter: fields
+- You can filter by foreign keys. 
+
+*How do you create a filter that filter by the foreign key.*
+
+
+```py
+# filter review by the category of room.
+# filter by the host of the user.
+list_filter = (
+    "rating",
+    "user__is_host",
+    "room__category"
+    )
+    
+```
+
+```py
+# Custom user code
+from django.contrib.admin import SimpleListFilter
+
+
+class PopularityFilter(SimpleListFilter):
+    title = "popularity"
+
+    parameter_name = "popular"
+
+    def lookups(self, request, model_admin):
+        return [("good", "Good(>3)"), ("bad", "Bad(<3)"), ("neutral", "Neutral(=3)")]
+
+    def queryset(self, request, reviews):
+        param = self.value()
+        match = {
+            "good": reviews.filter(rating__gt=3),
+            "bad": reviews.filter(rating__lt=3),
+            "neutral": reviews.filter(rating__exact=3),
+        }
+        return match.get(param, reviews)
+```
+
+- We can create a filter that has good, awesome, etc keywords. 
+- 
+```py
+class WordFilter(admin.SimpleListFilter):
+title = "Fliter By Good & Bad Review"
+
+parameter_name = "positive"
+
+
+# querySet will return the filter object. 
+def lookups(self, request, model_admin):
+    return [
+        # Second part of a tuple will pop up in the filter.
+    ("good", "Good"),
+    ("bad", "Bad"),
+    ("mediocre", "Mediocre"),
+    ]
+
+def queryset(self, request, reviews):
+    # Read URL value and extract it.
+    word = self.value()
+    if word == "good":
+    return reviews.filter(rating__gt=3)
+    elif word == "bad":
+    return reviews.filter(rating__lt=3)
+    elif word == "mediocre":
+    return reviews.filter(rating__exact=3)
+    else:
+    return reviews
+```
+
+Recap:
+
+- Search fields: by deafult you search looking a contain lookup, you can start lookup with ^ and equal with =.
+- Build actions: you create a function decorated by descriptions
+    - takes three argument. 
+    - last one is what is selected. 
+    - You can put that function in the method that you are going to create. 
+- You go to review
+- Custom filter. 
+    - simpleListfilter
+    - the word will show in the url. 
+    - lookup is the one that should return
+    - queryset method: returns filter review.
+    - 
