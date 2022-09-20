@@ -729,4 +729,222 @@ Steps:
 1. Startapp medias
 2. Add medias app in the setting
 3. Create two models (one for photos, one for videos)
-4. 
+4. Add model variables
+- file = models.ImageField()
+- description = models.CharField(max_length=140)
+- room = models.ForeignKey(
+    "rooms.Room",
+    on_delete=models.CASCADE
+)
+5. Video class
+    - If you use the foreign key, you can create many photos and they belong to the same room. 
+    - experience = models.OneToOneField.
+    - people use one to one when you have a user and a payment information. There shouldn't be the multiple payment information for one user. 
+6. Register models and two classes. 
+
+# Direct Messages
+
+- Users in the Air BnB can send direct message to each other. 
+- Create a direct_message or DMs
+- Install an app in settings.py
+- Go to models, create two models, in the room there are many users. 
+- 
+```py
+from django.db imports models
+from common.models import CommonModel
+
+class Room(CommonModel):
+    """ Room Model Definition"""
+    # Many to Many because users can interact with other users.
+    users = models.ManyToManyField(
+        "users.User",
+    )
+    
+class Message(commonModel):
+    text = models.TextField()
+    user = models.ForeignKey(
+        "users.User",
+        # message shouldn't get deleted even if the user gets deleted. 
+        on_delete = models.SET_NULL
+    )
+    room = models.ForeignKey(
+        "direct_messages.Room",
+        # Message will be deleted if the room is deleted.
+        on_delete=models.CASCADE.
+    )
+
+```
+
+- Chatroom is pointing to the user. 
+
+*How do you create a verbose_name*
+direct_message/apps.py
+```py
+class DirectMessagesConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "direct_messages"
+    verboses_name = "Direct Messages"
+```
+
+# ORM
+
+*What is ORM?*
+- Once you've created your data models, Django automatically gives you a database-abstraction API that lets you create, retrieve, update, and delete. 
+
+- Since we created models, we need to how to access those data NOT from admin panel. 
+
+*How do you access the database?*
+
+1. you can use the 'python manage.py shell'.
+
+- Model communicate with DB with the shape of your data. 
+- Room.objects: access the object properties.
+
+```py
+from rooms.models import Room
+# Get all the properties inside the model called Room.
+Rooms.objects.all()
+# returns a queryset.
+<QuetySet [<Room: Beautifyl House in >]>
+
+# Search by property name
+Rooms.objects.get(name="Beautiful House in seoul.")
+```
+room.id
+room.name
+etc......
+room.owner.
+.save(): saves all the changes you made in shell. 
+
+# Filter, get, create, delete
+
+- QuerySet can be looped. 
+- .get() is used when you want to search for something unique. - find with the primary key of 1 .get(pk=1)
+- .filter() allows you to search
+ex: 
+```py
+Room.objects.filter(pet_friendly=True)
+# Output:
+
+```
+- .filter() has many capabilities. 
+- Search for the room that has the word seoul.
+```py
+# Greater than 15
+Rooms.objects.filter(price__gt=15)
+```
+- Other filter options:
+- __contain
+- __startswith
+- These are called lookups.
+
+Steps:
+1. You have to import the model
+2. Amenity.objects.create() - creates an object.
+
+*How do you delete a data?*
+Steps:
+1. Get the object and put it in the variable. 
+to_delete = Amenity.objects.get(pk=7)
+2. Delete the object using .delete()
+to_delete.delete()
+
+
+# QuerySet
+
+*What is QuerySet?*
+- allows you to chain operation together. 
+- If you want to chain filter (filter twice), queryset allows us to keep filtering. 
+- room.objects.filter(pet_friendly=True).exclude(price__lt=15): price less than 15.
+
+- lazy: it will give the data when you are asked specifically. 
+```py
+for room in Room.Objects.all():
+    print(room.name)
+```
+Room.objects.filter(pet_friendly=True).count()
+
+- QuerySet
+    - lazy - doesn't kill db
+    - It can chain filter. 
+
+lookups and offsets
+
+# Admin methods
+
+- Lookups
+
+*What is lookup?*
+- iexact: insensitive exact
+- If you not have to care about uppercase or lowercase, you would use icontains(insensitive)
+- Rooms.objects.filter(created_at__year=2022)
+- You can search by months and peform gt operation.
+- QuerySet API reference.
+
+
+Admin methods
+- We can create a better panel for our admin. 
+- We can put our own functions in the admin panel. 
+- You can use the method in the model to create your own function.
+
+- Reverse accessors: what allows you to access relatinoship in reverse. 
+- Thanks to Django
+    - You can grab a room
+    - do Room.owner - django gives an user object. 
+    - room = Room.objects.get(pk=1)
+    - how many rooms do you have from the owner's point of view.
+
+*How can you rever access?*
+1. filter
+```py
+# If you use __ with the forign key, you can just access to items or properties of foreign keys. 
+Room.objects.filter(owner__username='nomadcoders')
+<Query>
+```
+
+user.rooms
+user.reviews
+user.wishlists
+
+- This is possible after you change one thing from the console. 
+
+*How do you access using reverse accessor?*
+
+```
+from users.models import User
+me = User.object.get(pk=1)
+
+```
+
+- dir(): It is useful because you can see all properties and methods. 
+- There are many _set
+
+- _sets are reverse accessor. 
+```py
+me.room_set
+me.room_set.all()
+# YOu can all the rooms created by that user. 
+```
+
+category.room_set.all()
+Django gives _set option to reverse access. 
+
+As of now, you have two options to access. 
+1. user.room
+2. user.room_set.all()
+
+In order to do #1, you have to set up special keyword inside the models.py
+
+```py
+owner = models.ForeignKey(
+    "users.User",
+    on_delete=moidels.CASCADE,
+    related_name="rooms",
+)
+```
+- speak outloud when you are confused about the relationship. 
+
+Recap:
+
+1. Foreign key
+2. 
