@@ -1118,3 +1118,457 @@ Recap:
     - lookup is the one that should return
     - queryset method: returns filter review.
     - 
+
+# URL and Views
+
+- There are ways to create a template in Django. 
+- 99% of the flask is the same. 
+- 
+
+Steps:
+1. Go to Config/urls.py
+2. Views.py is a function that you want to run when the user goes to a specific URL. 
+3. views.py: no body looks at it intently for the change. 
+
+urls.py
+```py
+from django.contrib import render
+from django.urls import path
+from room import views as room_views
+from users import views as users_views
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    # respond with views.say_hello function when user calls this path.
+    path("rooms", views.say_hello),
+]
+
+views.py
+```py
+from django.shortcuts import render
+from django.http import HttpResponse
+
+def say_hello(request):
+    return HttpResponse("hello!")
+```
+
+*How do you create separate urls in apps?*
+
+- Think about the future. You will have
+/rooms
+/rooms/1
+/rooms/1/edit
+/rooms/1/delete
+/users
+/users/1
+/users/1/edit
+/users/create-account
+etc......
+
+- You don't want to put all these routes in one url.py file. This will make it really confusing. 
+
+Steps:
+- Create urls.py inside the app.
+urls.py
+```py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.say_hello),
+]
+
+```
+- Create a route to the url of an app from config url.
+```py
+from django.contrib import admin
+from django.urls import path, include
+from rooms import views
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("rooms/", include("rooms.urls"),
+]
+```
+
+- Move the definition of urls. 
+- You make a reference to the app urls.py
+- app/urls.py will create a default route ""
+- make it execute app.views.py
+
+*How do you render http template in Django?*
+
+*how do you accept urls with variables in them?*
+
+views.py
+```py
+from django.shortcuts import render
+from django.http import HttpResponse
+
+def see_all_rooms(request):
+    return HttpResponse("see all rooms")
+
+# take one argument (keyword)
+def see_one_room(request, room_id):
+    return HttpResponse("see one room")
+    # Alternatively you can do this to view room_id. return HttpREsponse (f"see one room with {room_id")
+
+```
+
+urls.py
+```py
+from django urls import path
+from .import views
+
+urlpatterns = [
+    path("", views.see_all_rooms),
+    # Use less than and greater than; write type of the parameter that you want to receive.
+    path("<int:room_id>", views.see_one_room),
+
+]
+```
+
+- As a result, you can have many rooms with different id
+rooms/1, rooms/2
+
+- you can also make it receive string as well. 
+
+```py
+    path("<str:room_name>", views.s)
+```
+
+- You can put more than one variables too. 
+
+urls.py
+```py
+urlpatterns = [
+    path("<int:room_id>/<str:room_name>", views.see)
+]
+```
+
+views.py
+```
+def see_one_room(request, room_id, room_name):
+    return HttpResponse(f"see room with id: {room_id}")
+```
+
+## render
+
+- Get all the room from db and display on the page.
+
+```py
+from django.shortcuts import render
+from django.http import HttpResponse
+from .models import Room
+
+def see_all_rooms(request):
+    # Get all rooms from the DB.
+    rooms = Room.objects.all()
+    return render(request, "all_rooms.html, 
+    {
+        "rooms": rooms, 
+        "title": "Hello! this title comes from django!",
+    },
+    
+    # Third argument is the context data the data that you are going to send.
+```
+
+- The template should be in the default location. 
+- Django is configured to look at the template in the application folder. 
+- app folder/templates/<template>
+- 
+
+On the template
+
+.html
+```html
+<h1>{{title}}</h1>
+```
+
+## Django Template
+
+- We searched all the room and created a template to display data. 
+- Django can display data with the for..in 
+```py
+# Assume that there is a context data called "rooms"
+<ul>
+{% for room in rooms%}
+    <li>{{room.name}}</li>
+{% endfor %}
+</ul>
+```
+
+- Go back to your room model and you have amenities. You can access the relationships. 
+
+- rooms.amenities.
+
+```py
+<ul>
+{% for room in rooms%}
+    <li>{{room.name}}</li>
+    {% for amenity in room.amenities.all %}
+        <span>{{amenity.name}}</span>
+    {% endfor%}
+{% endfor %}
+</ul>
+```
+
+- How do I create a route to each room?
+
+```py
+<li><a href="/room/{{room.pk}}>link</a>
+# this will go and go to room/1 with the pk data included.
+```
+
+## DoesNotExist
+
+- When you search the room, you can do that.
+views.py
+```py
+def see_one_room(request, room_pk):
+    try:
+        room = Room.objects.get(pk=room_pk)
+        return render(request, "room_detail.html", 
+        {
+            "room":room,
+        })
+    except Room.DoesNotExist
+```
+
+template:
+```html
+{% if not not_found %}
+    <h1>{{room.name}}</h1>
+    <h2>{{room.country}}/{{room.city}}</h2>
+    <h4>{{room.price}}</h4>
+{% else %}
+    <h1> 404 not found</h1>
+{% endif %}
+
+```
+
+*Why not do template?*
+
+- Django is good at creating a dynamic HTML. 
+- It is hard to create a dynamic website with Django. 
+- Many website is good. 
+- But some things are not good enought to create super dynamic. 
+- It's very hard to create a dynamic - loading - notification - everything. You have to use ReactJS. 
+- We are going to use Django as API. JSON API and GraphQL API. 
+- The industry wants to use Django as a backend and ReactJS as the front end. 
+- We can use DJango REST Framework that allows us to build API. 
+
+
+# Django REST framework
+
+- It saves so much time and there are so much shortcuts. 
+- Django framework - industry standard. 
+- We are going to isntall it and what is it and how does it differnent from rendering a template. 
+- Installation part always use pip but we use poetry. 
+
+*How do you install Django REST framework?*
+
+```py
+poetry add djangorestframework. 
+```
+- We create an additional app in seeting.py as "THIRD_PARTY_APP"
+- Django is going to look for INSTALLED_APPS. 
+
+*What is the point of using API?*
+- iNSTEAD of giving the user HTML, we give JSON. 
+- JSON: a format to send code or data. 
+- ReactJS is going to take the JSON and make the UI for you. 
+- Django will not go to /room directly but the front end will request data from the server and it is going to show data in a beautiful way. 
+- Watch Rest API on youtube.
+    - We drop CRUD in url and use HTTP method. 
+    - Verb: HTTP method
+    - Noun: url
+    - POST URL. 
+    - DELETE URL
+    - GET URL
+
+# JsonResponse
+
+- Category: One model
+- We have rooms and experiences. 
+- You see categories: Chatting room and other can be in one appliccation. 
+- 
+
+/categories - shows a list of all categoreis. 
+/categories/1 - 
+
+GET - give me. 
+POST - send data to the server. 
+
+In the real world, you are going to have GET AND POST. 
+Tiny spoiler of how many URL we are going to build. 
+
+- Django REST doesn't change that much. 
+- urlpatterns = [
+
+]
+- Create a path; When somebody goes to /category. 
+- We have to handle it from urls.py. 
+- Create a view
+
+```py
+from django.http import JsonResponse
+from .models import Category
+
+def categories(result):
+    all_categories = Category.objects
+    return JsonResponse({"ok": True, 
+    
+    })
+
+
+```
+Google chrome - install JSON viewer. 
+
+- We can't do 
+"categories": all_categories,
+
+- QuerySet is not JSON serializable. 
+- We can't translate QuerySet to JSON
+- QuerySet is a python object. 
+- 
+
+*How do you fix "type QuerySet is not JSON serializable*
+
+- How do you translate QuerySet to 
+- Django Serializaing Django 
+- Format: XML, JSON 
+
+- Manual way, Django serializer
+
+Steps:
+1. Import Django serializer. 
+2. Change the view.py
+
+```py
+def categories(request):
+    all_categories = Category.objects.all()
+    return JsonResponse(
+        {
+            "ok":True
+            "categories": serializers.serialize("json",
+            all_categories),
+        }
+    )
+```
+
+- This is not good because it looks bad and it is displaying all data. We maybe want to hide some data. 
+- We use decorator
+- We are going to decorate this function with REST framework decorator. 
+- 
+
+*How do you create a decorator?*
+
+```py
+from rest_framework.decorator import api_view
+from rest_framework.response import Response
+from .models import Category
+
+@api_view()
+def categories(request):
+    return Response(
+        {
+            "ok":True,
+        }
+    )
+
+
+```
+
+- The moment you use django REST framework, it gives you all the things that you need to know status code, method, url that you are requesting, the method that you are requesting. 
+- Your user is going to see the simple version but we as a developer will see visualizer. 
+- Categories: cateogry.objects.all()
+- When you refresh you still have the error. 
+
+*How do you fix the issue with the django REST framework?*
+
+- We are going to see a serializer with the Django framework. We are going to look at the serializer. 
+- We are going to create a serializer. 
+- The translator is called a serializer. 
+- We are going to choose how we are going to serialize. 
+
+*How do you create a serializer?*
+Steps:
+1. Create a serializer.py in the app. 
+
+```py
+from rest_framework import serializers
+from .serializers import CategorySerializer
+
+class CategorySerializer(serializers.Serializer):
+    name = serializer.CharField(required=True)
+    kind = serializer.CharField()
+
+
+```
+
+- Category Serializer only knows how to translate two categories. 
+- Serializer is now receiving Django model and translate them in JSON. 
+- We have to repeat ourselves for every fields. 
+
+pk = serializer.IntegerField()
+
+Summary:
+
+views.py
+```py
+serializer = CategorySerializer(all_categories, many=True)
+return Respose(
+    {
+        "ok": True,
+        "categories": serializer.data,
+    }
+)
+```
+
+Views > Serializer > return the serialized data. 
+
+## POST requests
+
+GET REQUEST:
+
+urls.py
+```py
+urlpatterns = [
+    path("", views.categories),
+    path("<int:pk>", views.category)
+]
+
+```
+views.py
+```py
+@api_view()
+# receive a parameter named pk
+def category(request, pk):
+    category = Category.objects.get(pk=pk)
+    serializer = CategorySerializer(category)
+    return Response()
+```
+
+POST REQUEST:
+
+- Django will reject different type of request if not allowed. 
+
+*How do we allow certain type of requests?*
+```py
+# Allow both GET and POST method.
+@api_view(["GET", "POST"])
+def categories(requset):
+
+    if request.method == "GET":
+        all_categories = Category.objects.all()
+        serializer = CategorySerializer(all_categories, many=True)
+        return Response(serializer.data)
+    elif request.method == "POST":
+        return Response({"created": True})
+
+```
+
+- if you want the user to send category or a name, you can do that. 
+- We are going to print in the data. 
+- We do not always trust the user. We need to validate data that the user is trying to modify. 
+- The serializer is what you use to translate from Django to user word. Serializer also helps us to take data nad turn it into django object that we can put int he object.
