@@ -1572,3 +1572,97 @@ def categories(requset):
 - We are going to print in the data. 
 - We do not always trust the user. We need to validate data that the user is trying to modify. 
 - The serializer is what you use to translate from Django to user word. Serializer also helps us to take data nad turn it into django object that we can put int he object.
+
+## is_valid()
+
+- Serializer: we can turn our data into a category model. 
+- We have to do this in the category serializer because it knows how our data looks like. 
+- Serilizer explain the shape of your data and it will explain to the database. 
+- User sends JSON you can validate data. 
+```py
+@api_view()
+def category(request, pk):
+    category: 
+```
+
+- open console: 
+- serializer expects you to send pk and created_at they are mandatory. 
+- We told serializer that there are variables with req. variables. 
+- All you need to do is to specify which ones are required and not, and it will perform translation. 
+- Serializer gets user data and model.
+- We can create a category from the serializer. 
+
+## save()
+
+Django word to JSON word. 
+Take that into a user and translate. 
+Serializer helps us validate if the user data conform with the category data. 
+
+- You can constraint the case. 
+- All the variables in the Serializer needs to be in the model also. 
+- It seems repetitive. 
+- You don't create object in the views.py. 
+- You just need to call serializer.save(). 
+- Create() should return a new object or throw an error. 
+- When you call a save() method with a request data, this is only when it will create create() method. 
+- You have to create new with the validated data. 
+- If you had to create a really big model, you would be fishing. 
+- You can use a python shortcuts
+
+serializer.py
+```py
+def create(self, validated_data):
+    Category.objects.create(**validated_data)
+    {'name':'Category from DRF', 'kind':'rooms'}
+
+```
+views.py
+```py
+if serializer.is_valid():
+    new_category = serializer.save()
+    CategorySerializer(new_category).data
+    return Response({"created": True})
+else:
+    return Response(serializer.error)
+```
+
+- with this you can add category (data) into an app. 
+
+- we are going to PUT which means edit the category. 
+
+## update()
+
+- You are done with /category
+- You want to tell Django Framework for get request and put request. 
+
+- If something is going to create on the DB, you should do it on the POST. It it is updated, it can do PUT by convention. 
+
+- If you request for the does not exist id, it has to display an error message. 
+- try and except - raise. 
+views.py
+```py
+@api.view(["GET", "PUT"])
+def category(request, pk):
+    try:
+        category = Category.objects.get(pk=pk)
+    except Category.DoesNotExist:
+        raise NotFound
+
+```
+
+- When you raise not found, you are done. 
+- When you update the category, we have to update our data. WE also need to know what is the category that we are trying to update from the user data. 
+- call serializer.save() - the method is not going to be called. 
+- When you create a serializer, only from the user, it is going to create. 
+- Serializer is going to run update method. 
+- save() traffice light. 
+- When you create serializer.save() - update method is called. 
+- If you create a serializer with only user data, create method called. 
+- If you create serializer with the data of the user and the database, the update method will be called. 
+```py
+def update(self, instance, validated_data):
+    if validated_data['name']
+        data.get() has a second parameter, which is a default. 
+```
+- Test, if you put with on the url of an existing category ID, it will update the data. 
+
