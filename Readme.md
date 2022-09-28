@@ -1666,3 +1666,67 @@ def update(self, instance, validated_data):
 ```
 - Test, if you put with on the url of an existing category ID, it will update the data. 
 
+## Delete
+
+- Add @api_view(["GET", "PUT", "DELETE"])
+- from views.py
+- You can import a status code from rest_framework.status.
+```py
+elif request.method == "DELETE":
+    category.delete()
+    return Response(status=HTTP_204_NO_CONTENT)
+```
+- Django rest framework will let you know if you really want to delete or not. 
+- Try to version your api in url pattern
+```
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("room/", include(rooms.urls)),
+    path("api/v1/categories/", include("category"))
+]
+```
+
+## Recap:
+
+- Django can be used to render HTML. Build UI to build UI.
+- We do not want to use DJango for this reason. 
+- Django serializer can translate data from user to DB. 
+- Django rest framework can create serializer - translate model however we want to translate. 
+- We have to find a category and give it to the serializer and we respond with the data. 
+- Django rest framework will do the rest. 
+- We can give the data that the user sent and we can do the validation. Serializer.save()
+- Create serializer using the .create method. 
+- The create method is going to be called with the validated data that the user will give us. 
+- Serializer knows the requirements and restrictions of the data. 
+- We can talk to the database with objects data manager. 
+
+- if we create a category and the user data, you need to update the category. When the user sends put request, we put the category serializer with teh category that user wants to edit and the data that user wants to set. 
+
+- Django rest framework is smart enough. 
+- If you create a serializer from the database. 
+- it knows how to update from the database. 
+- update method > tries to get data. We are going to provide a data default. 
+- Django rest framework will give you an instance of the object model and the user data. 
+- You just explained it to the serializer. We just need to validate whether this is true or not. 
+- We are going to delete so much code. You know how it works from inside. 
+- You know how to describe data, update, save, methods. 
+- Difference between using user data and db data. 
+- You understand all these things. 
+- We can delete our code and we can use alternative. 
+
+## APIView
+
+- APIView can be imported from rest_framework.status import HTTP_204_NO_CONTENT
+
+```py
+class Category(APIView):
+    def get(self. request):
+        all_categories = Category.objects.all()
+        serializer = CategorySerializer(all)
+
+```
+- Create a class called Category and add get put and delete. 
+- It is going to receive a PK. 
+- detail - you are only seeing one item. 
+- Nico finds this APIview very good not super encapsulated. 
+- 
