@@ -1729,4 +1729,225 @@ class Category(APIView):
 - It is going to receive a PK. 
 - detail - you are only seeing one item. 
 - Nico finds this APIview very good not super encapsulated. 
+
+
+## ModelSerializer
+
+- We can use APIView to avoid if...else
+- Go to category serializer and delete everything.
+- We don't want to duplicate things. We have to go to manually go to serializer and add all the items. 
+
+- Update() method can be changed to lesser code. 
+- If there are many validated_data, it would be too much code to write. 
+- If we use a modelSerializer,
+*What is modelSerializer?*
+A ModelSerializer is just a regular Serializer, except that 
+- A set of default fields are automatically populated. 
+- A set of default validators are automatically populated. 
+- Default .create() and .update() implementations are provided. 
+
+Write a class name, inherit from the model serializer. 
+- You can include fields manually OR you can exclude them. 
+```py
+class CategorySerializer(serializer.ModelSerializer):
+    class Meta:
+        model = Category
+        # Show all the fields
+        fields = "__all__"
+```
+
+- This will take care of all create(), update(), and other methods.
+- When you print "serializer", you will see that everything is created for you. 
+
+
+## ModelViewSet
+
+*What is ModelViewSets?*
+
+- It is an incredible classes that hide all the code for us. 
+- 
+views.py
+```py
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+
+class CategoryViewSet(ModelViewSet):
+    # Need to know serializer and the objects of your views.
+    serializer_class = CategorySerializer
+    queryset = 
+
+
+```
+urls.py
+```py
+urlpatterns = [
+    path("", views.CategoryViewSet.as_view({
+        'get':'list',
+        'post';'create',
+    })),
+    path("<int:pk>", views.CategoryViewSet.as_view({
+        'get':'retrieve',
+        'put': 'partial_update',
+        'delete':'destroy'
+
+    })),
+]
+```
+
+- by setting this url and using the MdoelViewSet, you can use all the methods that does get, put,delete.
+
+## Conclusion
+
+- Django REST framework is very magical. 
+- There are things that you might find interesting in it. 
+
+- Router - Django doc.
+    - All you have to do is to include router url. 
+    - Create a router > give the name and include in the route. 
+    - Router will generate everything that you created in url. 
+
+- Viewsets - 
+    - ModelReadOnlyviewset
+    - You don't want user to write data and write on code, you can use this. 
+
+- if you want to create your own Viewsets, you can use CreateListRetrieveViewset
+- Map method to method. 
+- Viewset is useful and it will minimize the code but there are trade-offs. 
+- less explicit than building your code 
+- implicit - you have to know what the method or code does. 
+```py
+class CategoryViewSet(ModelViewSet):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+    def destory(self, request, *args, **kwargs):
+        return super().destroy(request, *arg, **kwardgs)
+```
+
+- If it requires much customization, you have to stay away from magic. Explicit is better than Implicit. 
+- Also, it is easy to understand if you write your own code than getting help.
+
+## REST API
+
+- Build API for practice
+
+- Hypothetical thinking
+
+We are going to build below:
+- GET POST /amenities
+- GET PUT DELETE /amenities/1
+
+- Create a room
+
+Views.py
+```py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Amenity
+from .serializers import AmenitySerializer
+
+    # Create api/v1/rooms/amenities
+    class Amenities(APIView):
+        def get(self, request):
+            all_amenities = Amenity.objects.all()
+            # Send many and return
+            serializer = AmenitySerializer(all_amenities, many=True)
+            return Response(serializer.data)
+
+        def post(self,request):
+            serializer = AmenitySerializer(data=request.data)
+            if serializer.is_valid():
+                # After you save, serializer returns a created amenities.
+                amenity = serializer.save()
+                return Response(
+                    AmenitySerializer(amenity).data, 
+                    )
+            else:
+                return Response(serializer.errors)
+    
+    class AmenityDetail(APIView):
+        def get(self, request, pk):
+            pass
+        def put(self, requset, pk):
+            pass
+        def delete(self, request, pk):
+            pass
+       
+```
+
+Config/urls.py
+```py
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/room", include("rooms.urls")),
+    path("api/v1/categories/", include("categories.urls")),
+]
+```
+
+App/urls.py
+```py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("amenities/", views.Amenities.as_view()),
+    path("amenities/<int:pk>", views.AmenityDetail.as_view()),
+]
+
+```
+
+- Create serializer.py
+
+```py
+from rest_framework.serializers import ModelSerializer
+from .models import Amenity
+
+# Serializer presents all the amenities to users.
+class AmenitySerializer(ModelSerializer):
+    class Meta:
+        model=Amenity
+        fields = "__all__"
+
+```
+
+- Allow user to create a new amenity.
+- Serializer do validation for you.
+- Post or update data. - def Post() is now added. 
+- 
+
+## Amenity detail
+
+- we have pk on the url because we asked for pk.
+- Search for amenity that has pk. 
+
+```py
+from rest_framework.exceptions import NotFound
+class AmenityDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Amenity.objects.get(pk=pk)
+        except Amenity.DoesNotExist:
+            raise NotFound
+    def get(self, request, pk):
+        amenity = self.get_object(pk)
+        serializer = AmenitySerializer(amentiy)
+        return Response(serializer.data)
+
+    # Partial update
+    def put(self, requset, pk):
+        amentity = self.get_object(pk)
+        serializer = AmenitySerializer(
+            amenity,
+            data=request.data,
+            partial=True,
+        )
+
+    def delete(self, request, pk):
+        amenity = self.get_object(pk)
+        amenity.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
+    
+```
+
+- Write the code that user can change partially. 
 - 
