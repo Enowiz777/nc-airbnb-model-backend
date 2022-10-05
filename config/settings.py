@@ -31,7 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 CUSTOM_APPS = [
-    "users.apps.UsersConfig"
+    "houses.apps.HousesConfig",
+    "users.apps.UsersConfig",
 ]
 
 SYSTEM_APPS = [
@@ -41,7 +42,6 @@ SYSTEM_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
 ]
 
 INSTALLED_APPS = SYSTEM_APPS + CUSTOM_APPS

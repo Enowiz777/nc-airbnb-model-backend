@@ -301,20 +301,26 @@ Field examples:
 Addiing what:
 - Profile, profile photo, github, kakao more authentication.
 
+*What are the cases that you want to create a custom login?*
+
+1. Use email address instead of username for a login.
+2. 
+
 *What are ways to customize users?*
+
+Two ways:
 
 1. Most people:
 a. Django user system
-b. Create a Profile model.
+b. Create a Profile model (Login with kakao, others)
 c. Connect them to authenticate.
 d. Profile will have other authentication options.
 
 **In the documentation, it is highly recommended to create a custom model.**
 
-- Changing to user model mid-project. 
-- The first thing is to create cutom model with your own. 
+- Changing to user model mid-project is extremely difficult. Therefore, it is better to create a custom user model for your own.
 
-- Install pylance: python server for a VScode.
+*Install pylance: python server for a VScode.*
 ```py
 # Scriggly lines.
 from django.db import models
@@ -326,7 +332,7 @@ cmd(ctrl) + shift + p
 > python select interpreter
 ```
 
-# Custom model
+## Custom model
 
 - Create a user application. 
 Steps:
@@ -1950,4 +1956,134 @@ class AmenityDetail(APIView):
 ```
 
 - Write the code that user can change partially. 
+- test delete and it works. 
+
+
+- Get the amenity; update you need amenity data the user is sending you. 
+- This is partial update. User is going to change the description. 
+- Amenity from the database. There is a partial update and the post before. If serializer is valid, we need to go serializer.save(). 
 - 
+```py
+if serializer.is_valid():
+    update_amenity = serializer.save()
+
+```
+
+## Perks and PerkDetail
+
+- Perk is the model in the experience application. 
+- WE are going to build one API to practice 
+- We need to be comfortable with serializer. 
+
+Steps:
+1. Create Experience URL file 
+urls.py
+```py
+from django.urls import path
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/experiences/", include("experiences.urls")),
+]
+
+```
+
+views.py
+```py
+from rest_framework.views import APIView
+
+class Perks(APIView):
+    def get(self, request):
+        pass
+    def post(self, requset):
+        pass
+
+class PerkDetail(APIView):
+    def get(self, request, pk):
+        pass
+    def put(self, request, pk):
+
+    def delete(self, request, pk):
+
+```
+
+- URL should get linked up with PerkDetail and Perks methods in the model. 
+
+
+```py
+from django.urls import path
+from .views import PerkDetail, Perks
+
+urlpatterns = [
+    path("perks/", Perks.as_view()),
+    path("perks/<int:pk>", PerkDetail.as_view()),
+]
+```
+
+- Create serializer
+
+```py
+from rest_framework.serializer import ModelSerializer
+from .models import Perk
+
+class PerkSerializer(ModelSerializer):
+    class Meta:
+        model=Perk
+        fields="__all__"
+```
+
+- Create a view
+
+view.py
+```py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.response import NotFound
+from rest_framework.status import HTTP_204_NO_CONTENT
+from .models import Perk
+from .serializer import PerkSerializer
+
+class Perks(APIView):
+    def get(self, request):
+        all_perks = Perks.objects.all()
+        serializer = PerkSerializer(all_perks, many=True)
+        return Response(serializer.data)
+
+    def post(self, requset):
+        serializer = PerkSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        else :
+            return Response(serializer.errors)
+
+class PerkDetail(APIView):
+
+    def get_object(self, pk):
+        try:
+            return Perk.objects.get(pk=pk)
+        except Perk.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        perk = self.get_object(pk)
+        serializer = PerkSerializer(perk)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        perk = self.get_object(pk)
+        serializer = PerkSerialier(perk, data=request.data)
+        if serializer.is_valid():
+            updated_perk = serializer.save()
+            return Response(
+                PerkSerializer(updated_perk).data,
+            )
+            serializer.save()
+        else:
+            return Response(serializer.errors)
+        
+
+    def delete(self, request, pk):
+        perk = self.get_object(pk)
+        perk.delete
+        return Response(status=HTTP_204_NO_CONTENT)
+```
